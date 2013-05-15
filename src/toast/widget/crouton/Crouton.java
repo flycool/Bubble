@@ -3,6 +3,7 @@ package toast.widget.crouton;
 
 import android.app.Activity;
 import android.content.res.Resources;
+import android.database.MergeCursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Shader;
@@ -14,6 +15,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -65,7 +67,7 @@ public class Crouton {
     }
 
     private Crouton(Activity activity, View customView, ViewGroup viewGroup) {
-        this(activity, customView, viewGroup, new Configuration());
+        this(activity, customView, viewGroup, Configuration.DEFAULT);
     }
 
     private Crouton(final Activity activity, final View customView, final ViewGroup viewGroup,
@@ -184,32 +186,46 @@ public class Crouton {
     // ==================================================================================================
 
     public static void hide(Crouton crouton) {
-
+        Manager.getInstance().removeCrouton(crouton);
     }
 
     public static void cancelAllCroutons() {
-
+        Manager.getInstance().clearCroutonQueue();
     }
 
     public static void clearCroutonsForActivity(Activity activity) {
-
+        Manager.getInstance().clearCroutonsForActivity(activity);
     }
 
     public void cancel() {
-
+        Manager.getInstance().removeCroutonImmediately(this);
     }
 
     public void show() {
-
+        Manager.getInstance().add(this);
     }
 
     public Animation getInAnimation() {
-
+        if (this.inAnimation == null && this.activity != null) {
+            if (getConfiguration().inAnimationResId > 0) {
+                this.inAnimation = AnimationUtils.loadAnimation(getActivity(), getConfiguration().inAnimationResId);
+            } else {
+                mearsureCroutionView();
+                this.inAnimation = DefaultAnimationsBuilder.buildDefaultSlideInDownAnimation(getView());
+            }
+        }
         return inAnimation;
     }
 
     public Animation getOutAnimation() {
-
+        if (this.outAnimation == null && this.activity != null) {
+            if (getConfiguration().outAnimationResId > 0) {
+                this.outAnimation = AnimationUtils.loadAnimation(getActivity(), getConfiguration().outAnimationResId);
+            } else {
+                mearsureCroutionView();
+                this.outAnimation = DefaultAnimationsBuilder.buildDefaultSlideOutUpAnimation(getView());
+            }
+        }
         return outAnimation;
     }
 
